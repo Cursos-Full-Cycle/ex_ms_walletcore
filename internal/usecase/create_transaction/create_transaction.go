@@ -3,6 +3,7 @@ package createtransaction
 import (
 	"ex_ms_walletcore/internal/entity"
 	"ex_ms_walletcore/internal/gateway"
+	"ex_ms_walletcore/pkg/events"
 )
 
 type CreateTransactionInputDto struct {
@@ -18,12 +19,21 @@ type CreateTransactionOutputDto struct {
 type CreateTransactionUseCase struct {
 	TransactionGateway gateway.TransactionGateway
 	AccountGateway     gateway.AccountGateway
+	EventDispatcher    events.EventDispatcherInterface
+	TransactionCreated events.EventInterface
 }
 
-func NewCreateTransactionUseCase(transactionGateway gateway.TransactionGateway, accountGateway gateway.AccountGateway) *CreateTransactionUseCase {
+func NewCreateTransactionUseCase(
+	transactionGateway gateway.TransactionGateway,
+	accountGateway gateway.AccountGateway,
+	eventDispatcher events.EventDispatcherInterface,
+	transactionCreated events.EventInterface,
+) *CreateTransactionUseCase {
 	return &CreateTransactionUseCase{
 		TransactionGateway: transactionGateway,
 		AccountGateway:     accountGateway,
+		EventDispatcher:    eventDispatcher,
+		TransactionCreated: transactionCreated,
 	}
 }
 
@@ -44,7 +54,12 @@ func (uc *CreateTransactionUseCase) Execute(input CreateTransactionInputDto) (*C
 	if err != nil {
 		return nil, err
 	}
-	return &CreateTransactionOutputDto{
+	output := &CreateTransactionOutputDto{
 		ID: transaction.ID,
-	}, nil
+	}
+
+	uc.TransactionCreated.SetPayload(output)
+	uc.EventDispatcher.Dispatch(uc.TransactionCreated)
+
+	return output, nil
 }

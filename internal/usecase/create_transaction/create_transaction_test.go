@@ -2,6 +2,8 @@ package createtransaction
 
 import (
 	"ex_ms_walletcore/internal/entity"
+	"ex_ms_walletcore/internal/event"
+	"ex_ms_walletcore/pkg/events"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -47,7 +49,10 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 	mockTransactionGateway := &TransactionGatewayMock{}
 	mockTransactionGateway.On("Create", mock.Anything).Return(nil)
 
-	uc := NewCreateTransactionUseCase(mockTransactionGateway, mockAccountGateway)
+	dispatcher := events.NewEventDispatcher()
+	event := event.NewTransactionCreated()
+
+	uc := NewCreateTransactionUseCase(mockTransactionGateway, mockAccountGateway, dispatcher, event)
 
 	input := CreateTransactionInputDto{
 		AccountIDFrom: account1.ID,
