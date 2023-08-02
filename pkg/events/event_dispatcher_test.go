@@ -14,6 +14,10 @@ type TestEvent struct {
 	Payload interface{}
 }
 
+func (e *TestEvent) SetPayload(payload interface{}) {
+	e.Payload = payload
+}
+
 func (e *TestEvent) GetName() string {
 	return e.Name
 }
