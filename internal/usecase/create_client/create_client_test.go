@@ -1,4 +1,4 @@
-package createclient
+package create_client
 
 import (
 	"ex_ms_walletcore/internal/entity"
