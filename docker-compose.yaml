@@ -2,9 +2,9 @@ version: '3'
 
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql
     platform: linux/amd64
-    container_name: mysql    
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wallet      
@@ -12,4 +12,4 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - .docker//mysql:/var/lib/mysql
+      - .docker/mysql:/var/lib/mysql

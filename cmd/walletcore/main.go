@@ -7,6 +7,8 @@ import (
 	"ex_ms_walletcore/internal/usecase/create_account"
 	"ex_ms_walletcore/internal/usecase/create_client"
 	"ex_ms_walletcore/internal/usecase/create_transaction"
+	"ex_ms_walletcore/internal/web"
+	"ex_ms_walletcore/internal/web/webserver"
 	"ex_ms_walletcore/pkg/events"
 	"fmt"
 
@@ -31,4 +33,17 @@ func main() {
 	createClientUseCase := create_client.NewCreateClientUseCase(clientDb)
 	createAccountUseCase := create_account.NewCreateAccountUseCase(accountDb, clientDb)
 	createTransactionUseCase := create_transaction.NewCreateTransactionUseCase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
+
+	webserver := webserver.NewWebServer(":3000")
+
+	clientHandler := web.NewWebClientHandler(*createClientUseCase)
+	accountHandler := web.NewWebAccountHandler(*createAccountUseCase)
+	transactionHandler := web.NewWebTransactionHandler(*createTransactionUseCase)
+
+	webserver.AddHandler("/clients", clientHandler.CreateClient)
+	webserver.AddHandler("/accounts", accountHandler.CreateAccount)
+	webserver.AddHandler("/transactions", transactionHandler.CreateTransaction)
+
+	webserver.Start()
+
 }
