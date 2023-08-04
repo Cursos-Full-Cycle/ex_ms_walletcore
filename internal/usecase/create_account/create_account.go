@@ -6,7 +6,7 @@ import (
 )
 
 type CreateAccountInputDto struct {
-	ClientID string
+	ClientID string `json:"client_id"`
 }
 
 type CreateAccountOutputDto struct {
