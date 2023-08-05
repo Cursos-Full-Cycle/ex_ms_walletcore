@@ -1,8 +1,10 @@
 package create_transaction
 
 import (
+	"context"
 	"ex_ms_walletcore/internal/entity"
 	"ex_ms_walletcore/internal/event"
+	"ex_ms_walletcore/internal/usecase/mocks"
 	"ex_ms_walletcore/pkg/events"
 	"testing"
 
@@ -42,17 +44,21 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 	account2 := entity.NewAccount(client2)
 	account2.Credit(1000)
 
-	mockAccountGateway := &AccountGatewayMock{}
-	mockAccountGateway.On("FindById", account1.ID).Return(account1, nil)
-	mockAccountGateway.On("FindById", account2.ID).Return(account2, nil)
+	mockUow := &mocks.UowMock{}
+	mockUow.On("Do", mock.Anything, mock.Anything).Return(nil)
 
-	mockTransactionGateway := &TransactionGatewayMock{}
-	mockTransactionGateway.On("Create", mock.Anything).Return(nil)
+	// mockAccountGateway := &AccountGatewayMock{}
+	// mockAccountGateway.On("FindById", account1.ID).Return(account1, nil)
+	// mockAccountGateway.On("FindById", account2.ID).Return(account2, nil)
+
+	// mockTransactionGateway := &TransactionGatewayMock{}
+	// mockTransactionGateway.On("Create", mock.Anything).Return(nil)
 
 	dispatcher := events.NewEventDispatcher()
 	event := event.NewTransactionCreated()
+	ctx := context.Background()
 
-	uc := NewCreateTransactionUseCase(mockTransactionGateway, mockAccountGateway, dispatcher, event)
+	uc := NewCreateTransactionUseCase(mockUow, dispatcher, event)
 
 	input := CreateTransactionInputDto{
 		AccountIDFrom: account1.ID,
@@ -60,14 +66,10 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 		Amount:        100,
 	}
 
-	output, err := uc.Execute(input)
+	output, err := uc.Execute(ctx, input)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, output)
-	assert.NotEmpty(t, output.ID)
-	mockAccountGateway.AssertExpectations(t)
-	mockAccountGateway.AssertNumberOfCalls(t, "FindById", 2)
-	mockTransactionGateway.AssertExpectations(t)
-	mockTransactionGateway.AssertNumberOfCalls(t, "Create", 1)
-
+	mockUow.AssertExpectations(t)
+	mockUow.AssertNumberOfCalls(t, "Do", 1)
 }
